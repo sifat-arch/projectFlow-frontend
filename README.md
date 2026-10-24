@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ProjectFlow Frontend
 
-## Getting Started
+**Backend API:** `https://projectflow-backend-brown.vercel.app`
 
-First, run the development server:
+> Replace the URL above with the deployed backend URL. Set the same URL in `NEXT_PUBLIC_API_BASE_URL` (including `/api/v1`) before deploying the frontend.
+
+ProjectFlow is a project submission and review platform that connects learners with mentors. Learners can submit projects and track their work, while mentors can review submissions and monitor progress.
+
+## Technology Stack
+
+- Next.js 16 (App Router) and React 19
+- TypeScript
+- Tailwind CSS 4 and shadcn/ui components
+- TanStack Query for server state and TanStack Form for forms
+- Zod for validation
+- Biome for linting and formatting
+
+## Architecture
+
+The frontend is a Next.js App Router application. Route segments under `src/app` provide public pages, authentication pages, and role-oriented dashboard pages. Reusable UI and layout components live in `src/components`. API functions are grouped under `src/api`, with a shared HTTP client in `src/lib/apiClient.ts`. TanStack Query hooks in `src/hooks` connect pages and components to the API. Shared form validation and data types live in `src/validation` and `src/types`.
+
+The frontend communicates with the ProjectFlow backend over HTTP. Authentication state and API requests are handled by the shared auth provider and API client.
+
+## Environment Variables
+
+Create a `.env.local` file in the frontend project root:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
+```
+
+For production, use the deployed backend URL, for example:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=https://projectflow-backend-brown.vercel.app/api/v1
+```
+
+## Installation and Development
+
+Requirements: Node.js 20 or newer and npm. Bun is also supported by the project.
+
+```bash
+git clone https://github.com/sifat-arch/projectFlow-frontend.git
+cd projectFlow-frontend
+npm install
+```
+
+Create `.env.local` with `NEXT_PUBLIC_API_BASE_URL`, then start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## Related Repository
 
-To learn more about Next.js, take a look at the following resources:
+- Backend: `https://github.com/sifat-arch/projectFlow-backend`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
