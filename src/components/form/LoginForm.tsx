@@ -5,16 +5,69 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { loginValidationSchema } from "@/validation";
 import { useState } from "react";
-import { Eye, EyeOff, Lock, Mail, Loader2, LogIn, ArrowRight } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Loader2,
+  LogIn,
+  ArrowRight,
+  ShieldCheck,
+  GraduationCap,
+  Sparkles,
+} from "lucide-react";
 import { useLogin } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { toast } from "../ui/toast";
 import Link from "next/link";
+import { setAuthSession } from "@/lib/auth-storage";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { mutate: login, isPending: loginPending } = useLogin();
   const router = useRouter();
+
+  const executeLogin = (credentials: { email: string; password: string }) => {
+    login(credentials, {
+      onSuccess: (response) => {
+        toast.add({
+          title: "Welcome back!",
+          description: response?.message || "Logged in successfully.",
+          type: "success",
+        });
+
+        if (response?.data?.accessToken && response?.data?.user) {
+          setAuthSession(response.data.accessToken, response.data.user);
+        }
+
+        const role = response?.data?.user?.role;
+        if (role === "MENTOR") {
+          router.push("/dashboard");
+        } else {
+          router.push("/dashboard/my-submition");
+        }
+      },
+      onError: (error: any) => {
+        const errorMessage =
+          error?.data?.message ||
+          error?.message ||
+          "Invalid email or password. Please try again.";
+
+        toast.add({
+          title: "Login Failed",
+          description: errorMessage,
+          type: "error",
+        });
+      },
+    });
+  };
+
+  const handleQuickFill = (email: string, password: string) => {
+    form.setFieldValue("email", email);
+    form.setFieldValue("password", password);
+    executeLogin({ email, password });
+  };
 
   const form = useForm({
     defaultValues: {
@@ -25,44 +78,10 @@ const LoginForm = () => {
       onSubmit: loginValidationSchema,
     },
     onSubmit: ({ value }) => {
-      login(
-        {
-          email: value.email,
-          password: value.password,
-        },
-        {
-          onSuccess: (response) => {
-            toast.add({
-              title: "Welcome back!",
-              description: response?.message || "Logged in successfully.",
-              type: "success",
-            });
-
-            if (typeof window !== "undefined" && response?.data) {
-              if (response.data.accessToken) {
-                localStorage.setItem("accessToken", response.data.accessToken);
-              }
-              if (response.data.user) {
-                localStorage.setItem("user", JSON.stringify(response.data.user));
-              }
-            }
-
-            router.push("/");
-          },
-          onError: (error: any) => {
-            const errorMessage =
-              error?.data?.message ||
-              error?.message ||
-              "Invalid email or password. Please try again.";
-
-            toast.add({
-              title: "Login Failed",
-              description: errorMessage,
-              type: "error",
-            });
-          },
-        },
-      );
+      executeLogin({
+        email: value.email,
+        password: value.password,
+      });
     },
   });
 
@@ -167,7 +186,9 @@ const LoginForm = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                       tabIndex={-1}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -206,6 +227,68 @@ const LoginForm = () => {
             )}
           </Button>
         </form>
+
+        {/* Quick Demo Login Credentials */}
+        <div className="mt-6 pt-5 border-t border-border/60 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="h-px flex-1 bg-border/60" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Sparkles className="h-3 w-3 text-primary" />
+              Demo Credentials (1-Click Login)
+            </span>
+            <div className="h-px flex-1 bg-border/60" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {/* Mentor Demo Button */}
+            <button
+              type="button"
+              disabled={loginPending}
+              onClick={() => handleQuickFill("jon@gmail.com", "jon12345")}
+              className="flex flex-col text-left p-3 rounded-xl border border-border/70 bg-muted/30 hover:bg-muted/70 hover:border-primary/40 transition-all cursor-pointer group disabled:opacity-50"
+            >
+              <div className="flex items-center justify-between w-full mb-1">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Mentor Account
+                </span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary uppercase">
+                  Mentor
+                </span>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-mono truncate">
+                jon@gmail.com
+              </span>
+              <span className="text-[10px] text-muted-foreground/75 font-mono">
+                Pass: jon12345
+              </span>
+            </button>
+
+            {/* Student Demo Button */}
+            <button
+              type="button"
+              disabled={loginPending}
+              onClick={() => handleQuickFill("hasan@gmail.com", "123456")}
+              className="flex flex-col text-left p-3 rounded-xl border border-border/70 bg-muted/30 hover:bg-muted/70 hover:border-emerald-500/40 transition-all cursor-pointer group disabled:opacity-50"
+            >
+              <div className="flex items-center justify-between w-full mb-1">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5 text-emerald-500" />
+                  Student Account
+                </span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 uppercase">
+                  Student
+                </span>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-mono truncate">
+                hasan@gmail.com
+              </span>
+              <span className="text-[10px] text-muted-foreground/75 font-mono">
+                Pass: 123456
+              </span>
+            </button>
+          </div>
+        </div>
 
         {/* Footer info */}
         <div className="mt-6 pt-6 border-t border-border/60 text-center">

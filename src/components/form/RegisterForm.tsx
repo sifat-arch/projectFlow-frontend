@@ -19,6 +19,7 @@ import { useRegister } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { toast } from "../ui/toast";
 import Link from "next/link";
+import { setAuthSession } from "@/lib/auth-storage";
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -53,19 +54,11 @@ const RegisterForm = () => {
               type: "success",
             });
 
-            if (typeof window !== "undefined" && response?.data) {
-              if (response.data.accessToken) {
-                localStorage.setItem("accessToken", response.data.accessToken);
-              }
-              if (response.data.user) {
-                localStorage.setItem(
-                  "user",
-                  JSON.stringify(response.data.user),
-                );
-              }
+            if (response?.data?.accessToken && response?.data?.user) {
+              setAuthSession(response.data.accessToken, response.data.user);
             }
 
-            router.push("/");
+            router.push("/dashboard/my-submition");
           },
           onError: (error: any) => {
             const errorMessage =
@@ -224,7 +217,9 @@ const RegisterForm = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                       tabIndex={-1}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
